@@ -36,4 +36,12 @@ class Transaksi extends Model
     {
         return $this->hasMany(TransaksiDetail::class, 'transaksi_id_212102', 'id_212102');
     }
+
+    public function item()
+    {
+        // Ganti App\Models\Item dengan model Item Anda yang sebenarnya
+        // Ganti 'item_id_212102' jika foreign key berbeda
+        // Ganti 'id_212102' jika primary key di model Item berbeda
+        return $this->belongsTo(MenuItem::class, 'item_id_212102', 'id_212102');
+    }
 }

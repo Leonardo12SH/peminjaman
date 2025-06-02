@@ -31,4 +31,9 @@ class MenuItem extends Model
     {
         return $this->hasMany(TransaksiDetail::class);
     }
+
+    public function menuItem()
+    {
+        return $this->belongsTo(Transaksi::class, 'menuitem_id', 'id_212102'); // Sesuaikan foreign & owner key
+    }
 }

@@ -204,4 +204,17 @@ class TransaksiController extends Controller
 
         return view('admin.transaksi.history', compact('history', 'search')); // Kirim 'search' ke view
     }
+
+    // Dalam Admin\TransaksiController.php atau controller yang sesuai
+    public function show($transaksi_id_212102)
+    {
+        $transaksi = Transaksi::with([
+            'user', // Relasi ke model User
+            'item', // Relasi ke item utama yang dibooking (jika ada)
+            'transaksi_details', // Relasi ke model TransaksiDetail
+            'transaksi_details.menuItem' // Asumsi TransaksiDetail punya relasi ke MenuItem
+        ])
+            ->findOrFail($transaksi_id_212102);
+        return view('admin.transaksi.show_detail', compact('transaksi'));
+    }
 }

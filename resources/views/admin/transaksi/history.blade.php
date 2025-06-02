@@ -7,12 +7,17 @@
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1 class="m-0 text-dark">Riwayat Transaksi</h1>
-                </div><div class="col-sm-6">
+                </div>
+                <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li> {{-- Sesuaikan dengan route dashboard admin --}}
+                        {{-- Sesuaikan route('home') dengan route dashboard admin Anda, misal route('admin.dashboard') --}}
+                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
                         <li class="breadcrumb-item active">Riwayat Transaksi</li>
                     </ol>
-                </div></div></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
     <section class="content">
         <div class="container-fluid">
             <div class="row">
@@ -20,14 +25,15 @@
                     <div class="card shadow-sm">
                         <div class="card-header">
                             <h3 class="card-title">Daftar Semua Transaksi</h3>
-                             <div class="card-tools">
+                            <div class="card-tools">
                                 {{-- Form Pencarian --}}
                                 <form action="{{ route('admin.transaksi.history') }}" method="GET" class="input-group input-group-sm" style="width: 250px;">
                                     <input type="text" name="search" class="form-control float-right" placeholder="Cari No. Transaksi/Nama..." value="{{ $search ?? '' }}">
                                     <div class="input-group-append">
                                         <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
                                         @if($search)
-                                        <a href="{{ route('historyAdmin') }}" class="btn btn-warning" title="Reset Pencarian"><i class="fas fa-times"></i></a>
+                                            {{-- Pastikan route 'historyAdmin' atau 'admin.transaksi.history' benar untuk reset --}}
+                                            <a href="{{ route('admin.transaksi.history') }}" class="btn btn-warning" title="Reset Pencarian"><i class="fas fa-times"></i></a>
                                         @endif
                                     </div>
                                 </form>
@@ -58,8 +64,8 @@
                                             <th>No.</th>
                                             <th>No. Transaksi</th>
                                             <th>Nama Penyewa</th>
-                                            <th class="d-none d-lg-table-cell">Tanggal Transaksi</th> {{-- Sembunyikan di layar kecil-menengah --}}
-                                            <th class="d-none d-md-table-cell">Waktu Mulai</th> {{-- Sembunyikan di layar kecil --}}
+                                            <th class="d-none d-lg-table-cell">Tanggal Transaksi</th>
+                                            <th class="d-none d-md-table-cell">Waktu Mulai</th>
                                             <th>Total Harga</th>
                                             <th>Status</th>
                                             <th>Aksi</th>
@@ -84,9 +90,13 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route('admin.transaksi.show', $transaksi->id_212102) }}" class="btn btn-info btn-xs" title="Lihat Detail">
+                                                    <a href="{{ route('admin.transaksi.show', $transaksi->id_212102) }}" class="btn btn-info btn-xs mr-1" title="Lihat Detail">
                                                         <i class="fas fa-eye"></i> <span class="d-none d-md-inline">Detail</span>
                                                     </a>
+                                                    <button type="button" class="btn btn-danger btn-xs" title="Hapus Transaksi"
+                                                            data-toggle="modal" data-target="#deleteConfirmModal-{{ $transaksi->id_212102 }}">
+                                                        <i class="fas fa-trash"></i> <span class="d-none d-md-inline">Hapus</span>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         @empty
@@ -108,39 +118,64 @@
                             {{ $history->links() }}
                         </div>
                     </div>
-                    </div>
+                </div>
             </div>
         </div>
     </section>
+
+    {{-- Modal Konfirmasi Delete --}}
+    @foreach ($history as $transaksi)
+    <div class="modal fade" id="deleteConfirmModal-{{ $transaksi->id_212102 }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel-{{ $transaksi->id_212102 }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+         
+            <form method="POST" action="{{ route('transaksi.destroy', $transaksi->id_212102) }}">
+                @csrf
+                @method('DELETE')
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel-{{ $transaksi->id_212102 }}">Konfirmasi Hapus Transaksi</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Anda yakin ingin menghapus transaksi dengan nomor <strong>{{ $transaksi->no_transaksi_212102 }}</strong>?</p>
+                        <p>Tindakan ini akan menghapus data secara permanen (jika tidak menggunakan soft delete) atau memindahkannya ke arsip (jika menggunakan soft delete).</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endforeach
+
 @endsection
 
 @push('styles')
-    {{-- Jika Anda menggunakan DataTables atau styling khusus untuk tabel --}}
-    {{-- <link rel="stylesheet" href="{{ asset('assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}"> --}}
     <style>
-        /* Tambahan style untuk tombol aksi yang lebih kecil */
         .btn-xs {
             padding: .25rem .4rem;
             font-size: .875rem;
             line-height: .5;
             border-radius: .2rem;
         }
-        /* Memastikan form search di card-tools rata kanan */
         .card-header .card-tools {
-            margin-right: 0; /* Override default jika ada */
+            margin-right: 0;
+        }
+        .table td, .table th { /* Untuk memastikan tombol tidak terlalu mepet */
+            vertical-align: middle;
         }
     </style>
 @endpush
 
 @push('scripts')
-    {{-- jQuery diasumsikan sudah ada dari layout utama --}}
-    {{-- Jika Anda menggunakan DataTables client-side (tidak disarankan untuk server-side pagination search) --}}
-    {{-- <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script> --}}
-    {{-- <script src="{{ asset('assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script> --}}
     <script>
         $(function () {
-            // Jika Anda tidak menggunakan DataTables untuk pencarian (karena sudah server-side),
-            // script di sini bisa kosong atau untuk fungsionalitas lain.
+            // Tidak ada script khusus yang diperlukan untuk modal delete ini
+            // karena data-target sudah unik dan form action sudah benar.
         });
     </script>
 @endpush
