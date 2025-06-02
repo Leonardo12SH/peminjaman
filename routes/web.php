@@ -10,27 +10,19 @@ use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\DashboardController;
 
 //user
-use App\Http\Controllers\Customer\TransactionController;
-use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\Customer\TransactionController as CustomerTransactionController; // Alias untuk menghindari konflik nama jika ada TransactionController lain
+use App\Http\Controllers\TransaksiController; // Ini adalah controller untuk admin
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
 */
-
-// Route::get('/', function () {
-//     return view('welcome');
-// });
 
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
+    // ... (rute menu dan menu-items Anda yang sudah ada) ...
     Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
     Route::get('menu/create', [MenuController::class, 'create'])->name('menu.create');
     Route::post('menu', [MenuController::class, 'store'])->name('menu.store');
@@ -41,15 +33,24 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::get('menu-items', [MenuItemController::class, 'index'])->name('menu-item.index');
     Route::get('menu-items/create', [MenuItemController::class, 'create'])->name('menu-item.create');
     Route::post('menu-items', [MenuItemController::class, 'store'])->name('menu-item.store');
-    Route::get('menu-items/{id}/edit', [MenuItemController::class, 'edit'])->name('menu-item.edit'); // Menggunakan parameter id
-    Route::patch('menu-items/{id}', [MenuItemController::class, 'update'])->name('menu-item.update'); // Menggunakan parameter id
-    Route::delete('menu-items/{id}', [MenuItemController::class, 'destroy'])->name('menu-item.destroy'); // Menggunakan parameter id
+    Route::get('menu-items/{id}/edit', [MenuItemController::class, 'edit'])->name('menu-item.edit');
+    Route::patch('menu-items/{id}', [MenuItemController::class, 'update'])->name('menu-item.update');
+    Route::delete('menu-items/{id}', [MenuItemController::class, 'destroy'])->name('menu-item.destroy');
+
 
     Route::get('transaksi/booking', [TransaksiController::class, 'index'])->name('booking.user');
-    Route::post('transaksi/booking', [TransaksiController::class, 'storeAccept'])->name('booking.storeAccept');
-    Route::post('transaksi/booking/reject', [TransaksiController::class, 'storeReject'])->name('booking.storeReject');
-    Route::get('historyAdmnin', [TransaksiController::class, 'history'])->name('historyAdmin');
+    Route::post('transaksi/booking', [TransaksiController::class, 'storeAccept'])->name('booking.storeAccept'); // Mungkin untuk aksi terima spesifik
+    Route::post('transaksi/booking/reject', [TransaksiController::class, 'storeReject'])->name('booking.storeReject'); // Mungkin untuk aksi tolak spesifik
 
+    // TAMBAHKAN ROUTE INI:
+    Route::post('transaksi/update-status', [TransaksiController::class, 'updateStatus'])->name('admin.transaksi.updateStatus');
+    Route::delete('/transaksi/{transaksi_id_212102}/destroy', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
+
+    Route::get('historyAdmin', [TransaksiController::class, 'history'])->name('historyAdmin');
+    Route::get('/admin/transaksi/history', [TransaksiController::class, 'history'])->name('admin.transaksi.history');
+    Route::get('/transaksi/{transaksi_id_212102}/show', [TransaksiController::class, 'show'])->name('admin.transaksi.show');
+
+    // ... (rute pengguna Anda yang sudah ada) ...
     Route::get('pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
     Route::get('pengguna/create', [PenggunaController::class, 'create'])->name('pengguna.create');
     Route::post('pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
@@ -57,25 +58,26 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::patch('pengguna/{id}', [PenggunaController::class, 'update'])->name('pengguna.update');
     Route::delete('pengguna/{id}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
 
+
+    // ... (rute dashboard dan logout Anda yang sudah ada) ...
     Route::get('card', [DashboardController::class, 'card'])->name('card');
     Route::get('week', [DashboardController::class, 'week'])->name('week');
     Route::get('month', [DashboardController::class, 'month'])->name('month');
-    Route::get('MenuItem', [DashboardController::class, 'MenuItem'])->name('MenuItem');
-
+    Route::get('MenuItem', [DashboardController::class, 'MenuItem'])->name('MenuItem'); // Penamaan MenuItem mungkin lebih baik menuitem atau menu_item
     Route::get('logoutaksi', [LoginController::class, 'logoutaksi'])->name('logoutaksi');
 });
 
 
 Route::group(['middleware' => 'customer', 'prefix' => 'customer'], function () {
     // Route::get('/', function () {
-    //     return 'customer';
+    // return 'customer';
     // })->name('customer');
 
-    Route::get('item', [TransactionController::class, 'transaksi'])->name('item');
-    Route::get('transaksi', [TransactionController::class, 'index'])->name('customer');
-    Route::post('transaksi', [TransactionController::class, 'store'])->name('transaction.store');
-    Route::get('booking', [TransactionController::class, 'booking'])->name('booking');
-    Route::get('history', [TransactionController::class, 'history'])->name('history');
+    Route::get('item', [CustomerTransactionController::class, 'transaksi'])->name('item');
+    Route::get('transaksi', [CustomerTransactionController::class, 'index'])->name('customer');
+    Route::post('transaksi', [CustomerTransactionController::class, 'store'])->name('transaction.store');
+    Route::get('booking', [CustomerTransactionController::class, 'booking'])->name('booking'); // Ini nama route-nya 'booking', di Blade Anda juga 'Booking'
+    Route::get('history', [CustomerTransactionController::class, 'history'])->name('history');
 
     Route::get('logoutaksi', [CustomerLoginController::class, 'logoutaksi'])->name('logoutaksicustomer');
 });
@@ -89,4 +91,7 @@ Route::get('view-verify', [LoginController::class, 'token'])->name('view-verify'
 Route::get('verify-token', [LoginController::class, 'verifyToken'])->name('verify-token');
 Route::post('verify-token', [LoginController::class, 'updatePassword'])->name('verify-token');
 
-Route::get('booking/{id}/detail', [TransactionController::class, 'detail'])->name('detail');
+// Perhatikan bahwa route 'detail' ini menggunakan TransactionController dari namespace customer
+// Jika ini dimaksudkan untuk admin, pastikan controller dan middleware-nya sesuai.
+// Jika untuk customer, pastikan ID transaksi tidak bisa diakses sembarangan.
+Route::get('booking/{id}/detail', [CustomerTransactionController::class, 'detail'])->name('detail');
