@@ -130,7 +130,7 @@
             </div>
         </div>
         <p class="text-center text-gray-400 text-xs mt-8">
-            &copy;2025 Penyewaan App. Hak Cipta Dilindungi.
+            &copy;2025 Penyewaan App fifi. Hak Cipta Dilindungi.
         </p>
     </div>
 
