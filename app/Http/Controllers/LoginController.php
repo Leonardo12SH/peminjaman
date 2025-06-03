@@ -15,47 +15,47 @@ use Session;
 
 class LoginController extends Controller
 {
-    
+
     public function login()
     {
         return view('login');
     }
 
     public function loginaksi(Request $request)
-{
-    $credentials = [
-        'email_212102' => $request->input('email_212102'),
-        'password_212102' => $request->input('password_212102'),
-    ];
+    {
+        $credentials = [
+            'email_212102' => $request->input('email_212102'),
+            'password_212102' => $request->input('password_212102'),
+        ];
 
-    $user = User::where('email_212102', $credentials['email_212102'])->first();
+        $user = User::where('email_212102', $credentials['email_212102'])->first();
 
-    if (!$user) {
-        Session::flash('error', 'User tidak terdaftar');
+        if (!$user) {
+            Session::flash('error', 'User tidak terdaftar');
+            return redirect('/');
+        }
+
+        if (Hash::check($credentials['password_212102'], $user->password_212102)) {
+            Auth::login($user); // manual login
+            if ($user->role_212102 === "admin") {
+                return redirect()->route('home');
+            } elseif ($user->role_212102 === "customer") {
+                return redirect()->route('customer');
+            }
+        }
+
+        Session::flash('error', 'Email atau password salah');
         return redirect('/');
     }
 
-    if (Hash::check($credentials['password_212102'], $user->password_212102)) {
-        Auth::login($user); // manual login
-        if ($user->role_212102 === "admin") {
-            return redirect()->route('home');
-        } elseif ($user->role_212102 === "customer") {
-            return redirect()->route('customer');
-        }
-    }
 
-    Session::flash('error', 'Email atau password salah');
-    return redirect('/');
-}
-
-    
 
     public function logoutaksi()
     {
         Auth::logout();
 
         request()->session()->invalidate();
- 
+
         request()->session()->regenerateToken();
 
         return redirect()->route('login');
@@ -111,27 +111,38 @@ class LoginController extends Controller
 
     public function register(Request $request)
     {
-        $role = "customer";
-        $name = $request->name;
-        $email = $request->email;
-        $telephone = $request->telephone;
-        $password = Hash::make($request->password);
-        $request->validate([
-            'email' => 'required|unique:users_212102',
-            'password' => 'required',
-            'name' => 'required',
-            'telephone' => 'required'
+        // 1. Validasi input request dengan nama field yang sesuai dari form
+        $validatedData = $request->validate([
+            // Kunci array harus sesuai dengan atribut 'name' pada input HTML
+            'name_212102'      => 'required|string|max:255',
+            'email_212102'     => 'required|string|email|max:255|unique:users_212102,email_212102', // Asumsi: tabel 'users_212102', kolom 'email_212102'
+            'password_212102'  => 'required', // Pertimbangkan untuk menambahkan rule 'confirmed' jika ada field konfirmasi password
+            'telephone_212102' => 'required|max:20', // Sesuaikan max length jika perlu
+        ], [
+            // Pesan kustom jika diperlukan (opsional)
+            'name_212102.required' => 'Nama lengkap tidak boleh kosong.',
+            'email_212102.required' => 'Email tidak boleh kosong.',
+            'email_212102.email' => 'Format email tidak valid.',
+            'email_212102.unique' => 'Email sudah terdaftar.',
+            'password_212102.required' => 'Password tidak boleh kosong.',
+            'password_212102.min' => 'Password minimal 6 karakter.',
+            'telephone_212102.required' => 'Nomor handphone tidak boleh kosong.',
         ]);
 
+        // 2. Buat instance User baru dan isi dengan data yang sudah divalidasi
         $user = new User;
-        $user->name_212102 = $name;
-        $user->email_212102 = $email;
-        $user->role_212102 = $role;
-        $user->telephone_212102 = $telephone;
-        $user->password_212102 = $password;
+        $user->name_212102 = $validatedData['name_212102'];
+        $user->email_212102 = $validatedData['email_212102'];
+        $user->telephone_212102 = $validatedData['telephone_212102'];
+        $user->password_212102 = Hash::make($validatedData['password_212102']); // Hashing password dilakukan di sini
+        $user->role_212102 = 'customer'; // Penetapan role
 
         $user->save();
 
-        return redirect()->route('login')->with('success', 'Silakan loggin');
+        // Opsional: Login pengguna secara otomatis setelah registrasi
+        // Auth::login($user);
+
+        // 3. Redirect ke halaman login dengan pesan sukses
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 }

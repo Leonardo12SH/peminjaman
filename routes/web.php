@@ -20,8 +20,7 @@ use App\Http\Controllers\TransaksiController; // Ini adalah controller untuk adm
 */
 
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
-    Route::get('/', [HomeController::class, 'index'])->name('home');
-
+    Route::get('/', [DashboardController::class, 'index'])->name('home');
     // ... (rute menu dan menu-items Anda yang sudah ada) ...
     Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
     Route::get('menu/create', [MenuController::class, 'create'])->name('menu.create');
@@ -59,11 +58,6 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::delete('pengguna/{id}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
 
 
-    // ... (rute dashboard dan logout Anda yang sudah ada) ...
-    Route::get('card', [DashboardController::class, 'card'])->name('card');
-    Route::get('week', [DashboardController::class, 'week'])->name('week');
-    Route::get('month', [DashboardController::class, 'month'])->name('month');
-    Route::get('MenuItem', [DashboardController::class, 'MenuItem'])->name('MenuItem'); // Penamaan MenuItem mungkin lebih baik menuitem atau menu_item
     Route::get('logoutaksi', [LoginController::class, 'logoutaksi'])->name('logoutaksi');
 });
 
@@ -78,6 +72,8 @@ Route::group(['middleware' => 'customer', 'prefix' => 'customer'], function () {
     Route::post('transaksi', [CustomerTransactionController::class, 'store'])->name('transaction.store');
     Route::get('booking', [CustomerTransactionController::class, 'booking'])->name('booking'); // Ini nama route-nya 'booking', di Blade Anda juga 'Booking'
     Route::get('history', [CustomerTransactionController::class, 'history'])->name('history');
+    Route::get('/admin/transaksi/history', [CustomerTransactionController::class, 'history'])->name('customer.transaksi.history');
+    Route::get('/transaksi/{transaksi_id_212102}/detail', [CustomerTransactionController::class, 'detail'])->name('customer.transaksi.detail');
 
     Route::get('logoutaksi', [CustomerLoginController::class, 'logoutaksi'])->name('logoutaksicustomer');
 });
